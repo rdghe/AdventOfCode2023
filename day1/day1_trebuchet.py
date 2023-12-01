@@ -11,7 +11,23 @@ letters_to_digits = {
 }
 
 
+def findall(a_str, sub):
+    """
+    Find all occurrences of a substring in a string
+    """
+    start = 0
+    while True:
+        start = a_str.find(sub, start)
+        if start == -1:
+            return
+        yield start
+        start += len(sub)
+
+
 def extract_calibration_value(line):
+    """
+    Extract the calibration value from a line
+    """
     print(f'Extracting calibration value from {line.strip()}')
     digit_ids = [i for i in range(0, len(line)) if line[i].isdigit()]
     first_digit = line[digit_ids[0]]
@@ -22,18 +38,28 @@ def extract_calibration_value(line):
 
 
 def substitute_encoded_digits(line):
+    """
+    Substitute encoded digits with their actual values
+    """
     print(f'Substituting encoded digits in "{line.strip()}"')
-    # Iterate through groups of 5 characters in the line
-    for i in range(0, len(line) - 4):
-        line_part = line[i:i + 5]
-        if len(line_part) < 3:
-            continue
-        # Replace letters with encoded digits
-        for key, value in letters_to_digits.items():
-            new_line_part = line_part.replace(key, value)
-            if new_line_part != line_part:
-                line = line[:i] + new_line_part + line[i + 5:]
-                break
+    # Populate with initial digits and their indices
+    digits_with_index = {i: line[i] for i in range(0, len(line)) if line[i].isdigit()}
+    # Iterate through encoded digits
+    for key, value in letters_to_digits.items():
+        found_indexes = findall(line, key)
+        if found_indexes:
+            for found_index in found_indexes:
+                # Add the encoded digit to the dictionary
+                print(f'Found {key} in {line.strip()} at index {found_index}')
+                digits_with_index[found_index] = value
+
+    # Sort the dictionary by index
+    digits_with_index = {k: v for k, v in sorted(digits_with_index.items(), key=lambda item: item[0])}
+    print(f'Found digits with index: {digits_with_index}')
+    # Replace the digits in the line
+    for index, digit in digits_with_index.items():
+        line = line[:index] + digit + line[index + 1:]
+
     print(f'New line: "{line.strip()}"')
     return line
 
@@ -52,7 +78,7 @@ def main():
             calibration_value = extract_calibration_value(line)
             total += calibration_value
 
-    print(total)
+    print(f'The sum of all calibration values is {total}')
 
 
 if __name__ == "__main__":
