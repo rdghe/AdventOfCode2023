@@ -8,7 +8,7 @@ class CubeReveal:
         self.blue_cubes = blue_cubes
 
     def __str__(self) -> str:
-        return f'Red cubes: {self.red_cubes}\nGreen cubes: {self.green_cubes}\nBlue cubes: {self.blue_cubes}'
+        return f'Red cubes: {self.red_cubes}; Green cubes: {self.green_cubes}; Blue cubes: {self.blue_cubes}'
 
 
 class CubeConundrum:
@@ -38,9 +38,26 @@ class CubeConundrum:
                 return False
         return True
 
+    def calculate_minimum_cubes(self) -> list[int]:
+        """
+        Calculate the minimum number of cubes for each color
+        """
+        max_revealed_red_cubes = max(
+            [cube_reveal.red_cubes for cube_reveal in self.cube_reveals] + [0]  # 0 is the minimum
+        )
+        max_revealed_green_cubes = max(
+            [cube_reveal.green_cubes for cube_reveal in self.cube_reveals] + [0]  # 0 is the minimum
+        )
+        max_revealed_blue_cubes = max(
+            [cube_reveal.blue_cubes for cube_reveal in self.cube_reveals] + [0]  # 0 is the minimum
+        )
+
+        return [max_revealed_red_cubes, max_revealed_green_cubes, max_revealed_blue_cubes]
+
 
 def main():
-    total = 0
+    sum_of_game_ids = 0
+    sum_of_power_set_of_cubes = 0
 
     with open('input.txt', 'r') as f:
         # Read the file line by line
@@ -54,7 +71,6 @@ def main():
             cube_reveal_objects = []
 
             for cube_reveal in cube_reveals:
-                print(cube_reveal.strip())
                 # Split the cube reveal into its components and construct CubeReveal objects
                 # Each cube reveal may reveal information about multiple colors, but not necessarily all three
                 # Use a regex with 3 capturing groups to extract the number of cubes revealed for each color
@@ -70,13 +86,20 @@ def main():
                 cube_reveal_objects.append(cube_reveal)
 
             cube_conundrum = CubeConundrum(game_id, cube_reveal_objects)
-            print(f'Game with ID {cube_conundrum.game_id} is {cube_conundrum.validate_cube_reveals()}')
+            print(f'Game with ID {cube_conundrum.game_id} is '
+                  f'{"valid" if cube_conundrum.validate_cube_reveals() else "invalid"}')
             if cube_conundrum.validate_cube_reveals():
-                total += cube_conundrum.game_id
+                sum_of_game_ids += cube_conundrum.game_id
 
-            print('##########')
+            minimum_cubes = cube_conundrum.calculate_minimum_cubes()
+            sum_of_power_set_of_cubes += minimum_cubes[0] * minimum_cubes[1] * minimum_cubes[2]
+            print(f'Minimum number of cubes for each color: {minimum_cubes[0]} red, '
+                  f'{minimum_cubes[1]} green, {minimum_cubes[2]} blue')
 
-    print(f'{total}')
+            print('\n\n')
+
+    print(f'The answer to part 1 (sum of Game IDs) is: {sum_of_game_ids}')
+    print(f'The answer to part 2 (sum of power set of cubes) is: {sum_of_power_set_of_cubes}')
 
 
 if __name__ == "__main__":
