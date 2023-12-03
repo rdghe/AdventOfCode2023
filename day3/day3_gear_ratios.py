@@ -1,3 +1,6 @@
+from pprint import pprint
+
+
 def traverse_matrix(matrix):
     """
     Traverse the matrix and extract the numbers and special characters, together with their indices.
@@ -46,15 +49,15 @@ def traverse_matrix(matrix):
     return numbers, special_characters
 
 
-def validate_numbers(numbers, special_characters):
+def find_part_numbers(numbers, special_characters):
     """
-    Numbers are considered valid if they are adjacent to at least one special
+    Numbers are considered "part numbers" if they are adjacent to at least one special
     character, either horizontally, vertically or diagonally.
     :param numbers: list of tuples, each tuple containing the number, start index and end index
     :param special_characters: list of tuples, each tuple containing the special character and its index
-    :return: list of valid numbers
+    :return: list of part numbers
     """
-    valid_numbers = []
+    part_numbers = []
 
     # Check if the special character is adjacent to the number, either horizontally, vertically or diagonally
     for number in numbers:
@@ -64,38 +67,68 @@ def validate_numbers(numbers, special_characters):
                     special_character[1][1] == number[1][1] - 1 or
                     special_character[1][1] == number[2][1] + 1
             ):
-                valid_numbers.append(number[0])
+                part_numbers.append((number, special_character))
                 break
             # Check for vertical adjacency
             if special_character[1][1] == number[1][1] and (
                     special_character[1][0] == number[1][0] - 1 or
                     special_character[1][0] == number[2][0] + 1
             ):
-                valid_numbers.append(number[0])
+                part_numbers.append((number, special_character))
                 break
             if special_character[1][1] == number[2][1] and (
                     special_character[1][0] == number[1][0] - 1 or
                     special_character[1][0] == number[2][0] + 1
             ):
-                valid_numbers.append(number[0])
+                part_numbers.append((number, special_character))
                 break
             # Check for diagonal adjacency
             if abs(special_character[1][0] - number[1][0]) == 1 and abs(special_character[1][1] - number[1][1]) == 1:
-                valid_numbers.append(number[0])
+                part_numbers.append((number, special_character))
                 break
             if abs(special_character[1][0] - number[2][0]) == 1 and abs(special_character[1][1] - number[2][1]) == 1:
-                valid_numbers.append(number[0])
+                part_numbers.append((number, special_character))
                 break
 
-    # Print the valid numbers
-    for number in valid_numbers:
-        print(f'Valid number: {number}')
+    # Print the part numbers
+    for number in part_numbers:
+        print(f'Part number: {number[0]}, adjacent to special character {number[1]}')
 
-    return valid_numbers
+    return part_numbers
+
+
+def find_gear_ratios(part_numbers):
+    """
+    Find the gear ratios for each part number.
+    A gear is any * symbol that is adjacent to exactly two part numbers.
+    Its gear ratio is the result of multiplying those two numbers together.
+    :param part_numbers: list of tuples, each tuple containing the number, start index and end index
+    :return: list of gear ratios
+    """
+    # Group the part numbers by special character
+    part_numbers_by_special_character = {}
+    for part_number in part_numbers:
+        if part_number[1] not in part_numbers_by_special_character:
+            part_numbers_by_special_character[part_number[1]] = [part_number[0]]
+        else:
+            part_numbers_by_special_character[part_number[1]].append(part_number[0])
+
+    print('Part numbers grouped by special character:')
+    pprint(part_numbers_by_special_character)
+
+    # Identify the gears and calculate the gear ratios
+    gear_ratios = []
+    for key, value in part_numbers_by_special_character.items():
+        if key[0] == '*' and len(value) == 2:
+            gear_ratio = value[0][0] * value[1][0]
+            print(f'Gear: {value[0][0]} with {value[1][0]}, gear ratio: {gear_ratio}')
+            gear_ratios.append(gear_ratio)
+
+    return gear_ratios
 
 
 def main():
-    with open('test_input.txt', 'r') as f:
+    with open('input.txt', 'r') as f:
         matrix = [list(row) for row in f.read().strip().split('\n')]
 
     # Traverse the matrix and extract the numbers and special characters, together with their indices
@@ -103,12 +136,13 @@ def main():
     print(f'Numbers: {numbers}')
     print(f'Special characters: {special_characters}')
 
-    # Find valid numbers
-    valid_numbers = validate_numbers(numbers, special_characters)
+    # Find part numbers and calculate their sum
+    part_numbers = find_part_numbers(numbers, special_characters)
+    print(f'Sum of part numbers: {sum(number[0][0] for number in part_numbers)}\n\n')
 
-    # Calculate the gear ratio
-    gear_ratio = sum(valid_numbers)
-    print(f'Gear ratio: {gear_ratio}')
+    gear_ratios = find_gear_ratios(part_numbers)
+    print(f'Gear ratios: {gear_ratios}')
+    print(f'Sum of gear ratios: {sum(gear_ratios)}')
 
 
 if __name__ == '__main__':
