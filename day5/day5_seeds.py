@@ -28,7 +28,8 @@ def main():
         else:
             category = category.strip().split(' ', 1)[0].replace('-', '_')
             print(category)
-            # Take groups of 3 from the values list and create a dictionary of `destination_range`, `source_range` and `range_length`
+            # Take groups of 3 from the values list and create lists
+            # of `destination_range`, `source_range` and `range_length`
             data_dict[category] = [values[i:i + 3] for i in range(0, len(values), 3)]
 
     print('destination range, source range, range length')
@@ -36,21 +37,31 @@ def main():
     for category, values in data_dict.items():
         print(f"{category}: {values}")
 
+    # Transform seeds to ranges; e.g. [79, 14, 55, 13] becomes 79 to 93 and 55 to 68
+    seeds_aux = []
+    for range_start, range_end in zip(data_dict['seeds'][::2], data_dict['seeds'][1::2]):
+        print(f"{range_start} to {range_start + range_end}")
+        seeds_aux.append(range(range_start, range_start + range_end))
+
+    data_dict['seeds'] = seeds_aux
+    print(f"Seeds: {data_dict['seeds']}")
+    print(f'Seeds length: {len(data_dict["seeds"])}')
+
     # Map the seeds to soil and all the way to location
-    for seed in data_dict['seeds']:
-        soil = map_seed_to_soil(seed, data_dict['seed_to_soil'])
-        fertilizer = map_soil_to_fertilizer(soil, data_dict['soil_to_fertilizer'])
-        water = map_fertilizer_to_water(fertilizer, data_dict['fertilizer_to_water'])
-        light = map_water_to_light(water, data_dict['water_to_light'])
-        temperature = map_light_to_temperature(light, data_dict['light_to_temperature'])
-        humidity = map_temperature_to_humidity(temperature, data_dict['temperature_to_humidity'])
-        location = map_humidity_to_location(humidity, data_dict['humidity_to_location'])
+    for seed_range in data_dict['seeds']:
+        print(f"Seed range: {seed_range}")
+        for seed in seed_range:
+            soil = map_seed_to_soil(seed, data_dict['seed_to_soil'])
+            fertilizer = map_soil_to_fertilizer(soil, data_dict['soil_to_fertilizer'])
+            water = map_fertilizer_to_water(fertilizer, data_dict['fertilizer_to_water'])
+            light = map_water_to_light(water, data_dict['water_to_light'])
+            temperature = map_light_to_temperature(light, data_dict['light_to_temperature'])
+            humidity = map_temperature_to_humidity(temperature, data_dict['temperature_to_humidity'])
+            location = map_humidity_to_location(humidity, data_dict['humidity_to_location'])
 
-        # Store the answer: the minimum location
-        if location < min_location:
-            min_location = location
-
-        print(f"Seed: {seed}, Soil: {soil}, Fertilizer: {fertilizer}, Water: {water}, Light: {light}, Temperature: {temperature}, Humidity: {humidity}, Location: {location}")
+            # Store the answer: the minimum location
+            if location < min_location:
+                min_location = location
 
     print(f"Minimum location: {min_location}")
 
